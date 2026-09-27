@@ -19,7 +19,7 @@ import unicodedata
 from dataclasses import asdict, dataclass
 
 
-# A deliberately small, explainable map of commom Greek/Cyrillic look-alikes
+# A deliberately small, explainable map of common Greek/Cyrillic look-alikes
 # It is not a complete implementation of Unicode confusable detection
 CONFUSABLES = {
     # Cyrillic
@@ -36,7 +36,7 @@ CONFUSABLES = {
 }
 
 # ASCII characters and character sequences commonly chosen for visual similarity
-# These are only treated as meaningful when compared with a user-supplie trused
+# These are only treated as meaningful when compared with a user-supplied trusted
 # domain, because digits and repeated letters are legitimate in many domains.
 ASCII_LOOKALIKES = {
     "0": "o", "1": "l", "3": "e", "5": "s", "7": "t",        
@@ -85,9 +85,15 @@ def load_confusables(file_path: Path) -> tuple[dict[str, str], str]:
 PROGRAM_DIRECTORY = Path(__file__).resolve().parent
 CONFUSABLES_FILE = PROGRAM_DIRECTORY / "confusables.txt"
 
-UNICODE_CONFUSABLES, CONFUSABLES_VERSION = load_confusables(
-    CONFUSABLES_FILE
-)
+if CONFUSABLES_FILE.exists():
+    UNICODE_CONFUSABLES, CONFUSABLES_VERSION = load_confusables(
+        CONFUSABLES_FILE
+    )
+else:
+    # Keep the program usable when the Unicode dataset has not yet been
+    # installed, while making the reduced coverage explicit to callers.
+    UNICODE_CONFUSABLES = CONFUSABLES.copy()
+    CONFUSABLES_VERSION = "built-in fallback map"
 
 
 
@@ -311,13 +317,6 @@ def analyze(value: str, trusted_domains: list[str] | None = None) -> Report:
         ))
         score += 35
 
-    mapped = [
-    (char, UNICODE_CONFUSABLES[char])
-    for char in decoded
-    if not char.isascii()
-    and char in UNICODE_CONFUSABLES
-]
-    
     try:
         ipaddress.ip_address(hostname.strip("[]"))
         return Report(value, hostname, decoded, encoded, [], skeleton, [], 0,
@@ -330,12 +329,11 @@ def analyze(value: str, trusted_domains: list[str] | None = None) -> Report:
                                 "The hostname contains non-ASCII characters."))
         score += 25
 
-    if any(label.startswith("xn--") for label in hostname.split(".")):
-        findings.append(Finding("info", "Punycode label",
-                                f"The displayed ASCII form is {encoded}."))
-        score += 10
-
-    mapped = [(char, CONFUSABLES[char]) for char in decoded if char in CONFUSABLES]
+    mapped = [
+        (char, UNICODE_CONFUSABLES[char])
+        for char in decoded
+        if not char.isascii() and char in UNICODE_CONFUSABLES
+    ]
     if mapped:
         examples = ", ".join(f"{char!r}->{replacement!r}" for char, replacement in mapped[:8])
         findings.append(Finding("high", "ASCII-like homoglyphs", examples))

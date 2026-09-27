@@ -4,6 +4,11 @@ A Python command-line tool that detects IDN homograph attacks, Unicode confusabl
 
 Domain Spoof Detector is a Python command-line tool designed to identify potential domain-impersonation techniques used in phishing, credential theft, social engineering, and other malicious activity. It analyzes a URL or hostname without connecting to it and reports characteristics that may indicate an Internationalized Domain Name (IDN) homograph attack, Unicode homoglyph attack, or ASCII-based typosquatting attempt.
 
+The repository also includes an optional Flask web interface suitable for a
+standalone deployment or embedding in Google Sites. See
+[`WEB_DEPLOYMENT.md`](WEB_DEPLOYMENT.md) for local testing, privacy behavior,
+Cloud Run deployment, and embedding instructions.
+
 The tool examines the actual characters underlying a hostname rather than relying only on how the domain appears visually. For non-ASCII and other notable characters, it can report the character’s position, Unicode code point, official Unicode name, writing system, and corresponding visual skeleton. This makes it possible to distinguish visually similar characters such as the ASCII Latin `a` (`U+0061`) and Cyrillic `а` (`U+0430`).
 
 ## Features
