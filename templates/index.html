@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Suspicious Domain Checker | Frederick Data Forensics</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <p class="eyebrow">Frederick Data Forensics, L.L.C.</p>
+      <h1>Suspicious Domain Checker</h1>
+      <p class="lede">
+        Examine a domain for Unicode look-alike characters, Punycode,
+        mixed writing systems, and common typosquatting patterns.
+      </p>
+    </header>
+
+    <section class="notice" aria-label="Safety notice">
+      <strong>Text-only analysis:</strong> This checker does not visit,
+      resolve, download from, or otherwise connect to the submitted domain.
+      Do not enter passwords, authentication codes, private document links,
+      password-reset links, or URLs containing personal access tokens.
+    </section>
+
+    <form method="post" action="{{ url_for('analyze_submission') }}" class="checker-form">
+      <label for="value">Suspicious domain or link</label>
+      <input
+        id="value"
+        name="value"
+        type="text"
+        maxlength="2048"
+        required
+        autocomplete="off"
+        spellcheck="false"
+        placeholder="Example: раypal.com or https://example.com/login"
+        value="{{ submitted_value }}"
+      >
+      <p class="help">Only the hostname is retained for display and analysis.</p>
+
+      <label for="trusted">Expected legitimate domain <span>(optional)</span></label>
+      <input
+        id="trusted"
+        name="trusted"
+        type="text"
+        maxlength="253"
+        autocomplete="off"
+        spellcheck="false"
+        placeholder="Example: paypal.com"
+        value="{{ trusted_value }}"
+      >
+      <p class="help">Enter the domain you expected for a direct similarity comparison.</p>
+
+      <label class="acknowledgment">
+        <input name="acknowledged" type="checkbox" value="yes" required>
+        <span>I understand that this is a preliminary text analysis and does not determine whether a website is safe or malicious.</span>
+      </label>
+
+      <div class="actions">
+        <button type="submit">Analyze Domain</button>
+        <a class="secondary" href="{{ url_for('index') }}">Clear Results</a>
+      </div>
+    </form>
+
+    {% if error %}
+      <section class="error" role="alert">
+        <h2>Unable to analyze</h2>
+        <p>{{ error }}</p>
+      </section>
+    {% endif %}
+
+    {% if report %}
+      <section class="results" aria-live="polite">
+        <h2>Analysis Summary</h2>
+        <dl class="summary-grid">
+          <div><dt>Hostname</dt><dd>{{ report.hostname }}</dd></div>
+          <div><dt>Unicode form</dt><dd>{{ report.unicode_hostname }}</dd></div>
+          <div><dt>ASCII/Punycode form</dt><dd>{{ report.ascii_hostname }}</dd></div>
+          <div><dt>Scripts detected</dt><dd>{{ report.scripts|join(', ') if report.scripts else 'None' }}</dd></div>
+          <div><dt>Risk score</dt><dd>{{ report.risk_score }}/100</dd></div>
+          <div><dt>Preliminary result</dt><dd class="verdict verdict-{{ report.verdict|replace(' ', '-') }}">{{ report.display_verdict }}</dd></div>
+        </dl>
+
+        <h3>Detected Indicators</h3>
+        {% if report.findings %}
+          <ul class="findings">
+          {% for finding in report.findings %}
+            <li class="finding finding-{{ finding.severity }}">
+              <strong>{{ finding.reason }}</strong>
+              <span>{{ finding.detail }}</span>
+            </li>
+          {% endfor %}
+          </ul>
+        {% else %}
+          <p>No indicators supported by the implemented checks were detected.</p>
+        {% endif %}
+
+        {% if report.character_details %}
+          <h3>Character Details</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Position</th><th>Character</th><th>Code point</th><th>Unicode name</th><th>Script</th><th>Resembles</th></tr>
+              </thead>
+              <tbody>
+              {% for item in report.character_details %}
+                <tr>
+                  <td>{{ item.index }}</td>
+                  <td class="character">{{ item.character }}</td>
+                  <td>{{ item.code_point }}</td>
+                  <td>{{ item.unicode_name }}</td>
+                  <td>{{ item.script }}</td>
+                  <td>{{ item.looks_like or '—' }}</td>
+                </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% endif %}
+
+        <section class="limitation">
+          <h3>Important limitation</h3>
+          <p>
+            This heuristic result is not a determination that the domain is
+            malicious or safe. The checker does not inspect registration,
+            DNS, hosting, certificates, redirects, webpage content,
+            reputation services, malware detections, or threat intelligence.
+          </p>
+        </section>
+      </section>
+    {% endif %}
+
+    <footer>
+      <p>Unicode confusables data: {{ confusables_version }}</p>
+      <p>For educational and preliminary triage use. Analyst review may be appropriate.</p>
+    </footer>
+  </main>
+</body>
+</html>
