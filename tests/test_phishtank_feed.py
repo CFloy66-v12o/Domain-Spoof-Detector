@@ -1,6 +1,17 @@
 import unittest
 
-from phishtank_feed import parse_phishtank_record
+from pathlib import Path
+
+from phishtank_feed import (
+    load_phishtank_json,
+    parse_phishtank_record,
+)
+
+FIXTURE_PATH = (
+    Path(__file__).parent
+    / "fixtures"
+    / "phishtank_sample.json"
+)
 
 
 class PhishTankFeedTests(unittest.TestCase):
