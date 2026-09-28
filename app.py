@@ -159,7 +159,7 @@ def create_app() -> Flask:
 
                 display_value = report.hostname
 
-                                intelligence_findings = []
+                intelligence_findings = []
 
                 if phishtank_index is not None:
                     intelligence_findings.extend(
