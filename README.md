@@ -249,3 +249,37 @@ The included Unicode confusables dataset is provided by Unicode, Inc. under the 
 ## Disclaimer
 
 This software is provided for educational, defensive-security, and research purposes. Its findings should be treated as indicators requiring analyst interpretation, not as conclusive determinations that a domain is safe or malicious.
+
+## Known-Threat Intelligence Development Status
+
+The project includes a local threat-intelligence lookup framework that is
+currently intended for development and testing. It remains separate from the
+domain-name character and spelling analysis.
+
+The intelligence framework does not visit, resolve, or connect to submitted
+domains or URLs. Lookups are performed against locally stored records. Full
+submitted URLs are processed only as necessary for comparison, while public
+results display a sanitized, defanged hostname.
+
+### Fabricated Test Feed
+
+The repository includes a small fabricated feed containing reserved
+`.example.test` domains. These records are fictional and exist only to test:
+
+- Exact-URL matches
+- Hostname associations
+- No-match results
+- Unavailable-feed results
+- Threat-category separation
+- Safe display and defanging behavior
+
+The fabricated feed must never be described as real threat intelligence or
+used to make decisions about actual domains.
+
+### Feature Flag
+
+The fabricated lookup is disabled by default. It runs only when the following
+environment variable is explicitly enabled:
+
+```text
+FDF_ENABLE_FABRICATED_THREAT_FEED=true
