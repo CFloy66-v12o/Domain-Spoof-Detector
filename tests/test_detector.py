@@ -135,5 +135,31 @@ class DetectorTests(unittest.TestCase):
         self.assertEqual(result, "subdomain[.]example[.]com")
 
 
+    def test_web_result_displays_only_sanitized_defanged_hostname(self):
+        app = create_app()
+        app.testing = True
+
+        response = app.test_client().post(
+            "/analyze",
+            data={
+                "value": (
+                    "https://user:password@example.com/private/document"
+                    "?token=secret-value#account"
+                ),
+                "trusted": "",
+                "acknowledged": "yes",
+            },
+        )
+
+        body = response.get_data(as_text=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("example[.]com", body)
+        self.assertIn("Defanged submitted hostname", body)
+        self.assertNotIn("user:password", body)
+        self.assertNotIn("/private/document", body)
+        self.assertNotIn("token=secret-value", body)
+        self.assertNotIn("#account", body)
+
 if __name__ == "__main__":
     unittest.main()
