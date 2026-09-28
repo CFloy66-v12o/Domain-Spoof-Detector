@@ -100,7 +100,7 @@ class DetectorTests(unittest.TestCase):
         body = response.get_data(as_text=True)
 
         self.assertEqual(response.status_code, 200)
-        self.assertIn("Compared with paypal.com", body)
+        self.assertIn("paypal[.]com", body)
         self.assertIn(
             "Supported domain-name indicators detected",
             body,
