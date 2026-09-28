@@ -283,7 +283,7 @@ environment variable is explicitly enabled:
 
 ```text
 FDF_ENABLE_FABRICATED_THREAT_FEED=true
-
+```
 ## PhishTank Feed Integration
 
 The application supports local lookups against a validated PhishTank JSON
