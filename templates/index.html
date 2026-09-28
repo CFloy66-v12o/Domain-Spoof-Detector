@@ -247,6 +247,92 @@
             reputation services, malware detections, or threat intelligence.
           </p>
         </section>
+                {% if intelligence_findings %}
+          <section
+            class="intelligence-results"
+            aria-label="Known-threat intelligence test results"
+          >
+            <h2>Known-Threat Intelligence</h2>
+
+            <div class="test-data-notice">
+              <strong>Development test data:</strong>
+              These results use a fabricated local dataset containing reserved
+              <code>.test</code> domains. They are included only to validate
+              the lookup workflow and are not real threat-intelligence
+              findings.
+            </div>
+
+            {% for finding in intelligence_findings %}
+              <article
+                class="intelligence-finding intelligence-{{ finding.status }}"
+              >
+                <h3>
+                  {{ finding.status|replace('_', ' ')|title }}
+                </h3>
+
+                <dl class="intelligence-grid">
+                  <div>
+                    <dt>Source</dt>
+                    <dd>{{ finding.source }}</dd>
+                  </div>
+
+                  <div>
+                    <dt>Classification</dt>
+                    <dd>
+                      {{ finding.classification|replace('_', ' ')|title }}
+                    </dd>
+                  </div>
+
+                  <div>
+                    <dt>Match type</dt>
+                    <dd>
+                      {{ finding.match_type|replace('_', ' ')|title }}
+                    </dd>
+                  </div>
+
+                  <div>
+                    <dt>Source verification</dt>
+                    <dd>
+                      {{ 'Verified' if finding.verified else 'Not verified' }}
+                    </dd>
+                  </div>
+
+                  <div>
+                    <dt>Source timestamp</dt>
+                    <dd>
+                      {{ finding.source_timestamp or 'Not provided' }}
+                    </dd>
+                  </div>
+
+                  <div>
+                    <dt>Lookup timestamp</dt>
+                    <dd>{{ finding.lookup_timestamp }}</dd>
+                  </div>
+
+                  <div class="intelligence-wide">
+                    <dt>Reference</dt>
+                    <dd>{{ finding.reference or 'Not provided' }}</dd>
+                  </div>
+                </dl>
+
+                <p>{{ finding.detail }}</p>
+
+                {% if finding.status == 'not_found' %}
+                  <p class="intelligence-caution">
+                    No match means only that this value was not located in
+                    the source checked. It does not mean the domain or URL is
+                    safe.
+                  </p>
+                {% elif finding.status == 'unavailable' %}
+                  <p class="intelligence-caution">
+                    The intelligence source was unavailable. Do not interpret
+                    this result as a clean or safe determination.
+                  </p>
+                {% endif %}
+              </article>
+            {% endfor %}
+          </section>
+        {% endif %}
       </section>
     {% endif %}
 
