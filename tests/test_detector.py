@@ -246,16 +246,16 @@ class DetectorTests(unittest.TestCase):
         
 
     def test_web_result_uses_configured_phishtank_feed(self):
-    with patch.dict(
-        "os.environ",
-         {
-            "FDF_PHISHTANK_FEED_PATH": str(
-                 PHISHTANK_FIXTURE_PATH
-            )
-        },
-        clear=False,
+        with patch.dict(
+            "os.environ",
+            {
+                "FDF_PHISHTANK_FEED_PATH": str(
+                    PHISHTANK_FIXTURE_PATH
+                )
+            },
+            clear=False,
         ):
-        app = create_app()
+            app = create_app()
 
         app.testing = True
 
