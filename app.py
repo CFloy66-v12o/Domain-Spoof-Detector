@@ -102,7 +102,6 @@ def create_app() -> Flask:
                     else ""
                 )
                 report_data["display_verdict"] = {
-                report_data["display_verdict"] = {
                     "low risk": (
                         "No supported domain-name indicators detected"
                     ),
