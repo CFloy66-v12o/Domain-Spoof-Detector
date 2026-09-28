@@ -5,7 +5,12 @@ from dataclasses import asdict
 
 from flask import Flask, render_template, request
 from local_threat_lookup import lookup_local_feed
-
+from phishtank_feed import (
+    build_phishtank_index,
+    load_phishtank_json,
+    lookup_phishtank_index,
+)
+from threat_intelligence import ThreatIntelligenceFinding
 from idnHomoglyphDetector import (
     CONFUSABLES_VERSION,
     analyze,
@@ -28,6 +33,35 @@ def create_app() -> Flask:
         "",
     ).casefold()
     in {"1", "true", "yes"}
+    )
+        phishtank_feed_path = os.environ.get(
+        "FDF_PHISHTANK_FEED_PATH",
+        "",
+    ).strip()
+
+    phishtank_index = None
+    phishtank_feed_status = "disabled"
+
+    if phishtank_feed_path:
+        try:
+            phishtank_records = load_phishtank_json(
+                phishtank_feed_path
+            )
+            phishtank_index = build_phishtank_index(
+                phishtank_records
+            )
+            phishtank_feed_status = "available"
+        except ValueError:
+            phishtank_feed_status = "unavailable"
+            app.logger.warning(
+                "Configured PhishTank feed could not be loaded"
+            )
+
+    app.config["PHISHTANK_FEED_CONFIGURED"] = bool(
+        phishtank_feed_path
+    )
+    app.config["PHISHTANK_FEED_STATUS"] = (
+        phishtank_feed_status
     )
 
     @app.after_request
@@ -125,12 +159,44 @@ def create_app() -> Flask:
 
                 display_value = report.hostname
 
+                                intelligence_findings = []
+
+                if phishtank_index is not None:
+                    intelligence_findings.extend(
+                        lookup_phishtank_index(
+                            phishtank_index,
+                            value,
+                        )
+                    )
+                elif app.config[
+                    "PHISHTANK_FEED_CONFIGURED"
+                ]:
+                    intelligence_findings.append(
+                        ThreatIntelligenceFinding(
+                            source="PhishTank",
+                            status="unavailable",
+                            classification="phishing",
+                            match_type="none",
+                            verified=False,
+                            detail=(
+                                "The PhishTank feed is temporarily "
+                                "unavailable. No PhishTank determination "
+                                "was made."
+                            ),
+                        )
+                    )
+
                 if app.config[
                     "FABRICATED_THREAT_LOOKUP_ENABLED"
                 ]:
+                    intelligence_findings.extend(
+                        lookup_local_feed(value)
+                    )
+
+                if intelligence_findings:
                     intelligence_data = [
                         finding.to_dict()
-                        for finding in lookup_local_feed(value)
+                        for finding in intelligence_findings
                     ]
             except (UnicodeError, ValueError) as exc:
                 error = f"The hostname could not be analyzed: {exc}"
@@ -147,7 +213,13 @@ def create_app() -> Flask:
 
     @app.get("/health")
     def health():
-        return {"status": "ok", "confusables_version": CONFUSABLES_VERSION}
+        return {
+            "status": "ok",
+            "confusables_version": CONFUSABLES_VERSION,
+            "phishtank_feed": app.config[
+                "PHISHTANK_FEED_STATUS"
+            ],
+        }
 
     return app
 
