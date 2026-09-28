@@ -4,6 +4,7 @@ import os
 from dataclasses import asdict
 
 from flask import Flask, render_template, request
+from local_threat_lookup import lookup_local_feed
 
 from idnHomoglyphDetector import (
     CONFUSABLES_VERSION,
@@ -21,6 +22,13 @@ MAX_TRUSTED_LENGTH = 253
 def create_app() -> Flask:
     app = Flask(__name__)
     app.config["MAX_CONTENT_LENGTH"] = 16 * 1024
+    app.config["FABRICATED_THREAT_LOOKUP_ENABLED"] = (
+      os.environ.get(
+        "FDF_ENABLE_FABRICATED_THREAT_FEED",
+        "",
+    ).casefold()
+    in {"1", "true", "yes"}
+    )
 
     @app.after_request
     def security_headers(response):
@@ -49,6 +57,7 @@ def create_app() -> Flask:
         return render_template(
             "index.html",
             report=None,
+            intelligence_findings=None,
             error=None,
             submitted_value="",
             trusted_value="",
@@ -62,6 +71,7 @@ def create_app() -> Flask:
         acknowledged = request.form.get("acknowledged") == "yes"
         error = None
         report_data = None
+        intelligence_data = None
         display_value = ""
         display_trusted = ""
 
@@ -114,12 +124,21 @@ def create_app() -> Flask:
                 }.get(report.verdict, report.verdict)
 
                 display_value = report.hostname
+
+                if app.config[
+                    "FABRICATED_THREAT_LOOKUP_ENABLED"
+                ]:
+                    intelligence_data = [
+                        finding.to_dict()
+                        for finding in lookup_local_feed(value)
+                    ]
             except (UnicodeError, ValueError) as exc:
                 error = f"The hostname could not be analyzed: {exc}"
 
         return render_template(
             "index.html",
             report=report_data,
+            intelligence_findings=intelligence_data,
             error=error,
             submitted_value=display_value,
             trusted_value=display_trusted,
