@@ -15,7 +15,7 @@ from local_threat_lookup import (
     canonicalize_url,
     extract_intelligence_hostname,
 )
-
+from threat_intelligence import ThreatIntelligenceFinding
 
 @dataclass(frozen=True)
 class PhishTankRecord:
