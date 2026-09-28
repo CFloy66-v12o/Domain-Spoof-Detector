@@ -208,12 +208,14 @@ def create_app() -> Flask:
             "index.html",
             report=report_data,
             intelligence_findings=intelligence_data,
+            fabricated_feed_enabled=app.config[
+                "FABRICATED_THREAT_LOOKUP_ENABLED"
+            ],
             error=error,
             submitted_value=display_value,
             trusted_value=display_trusted,
             confusables_version=CONFUSABLES_VERSION,
         ), 400 if error else 200
-
     @app.get("/health")
     def health():
         return {
