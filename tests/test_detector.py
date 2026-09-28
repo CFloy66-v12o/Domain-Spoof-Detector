@@ -150,7 +150,81 @@ class DetectorTests(unittest.TestCase):
                 "acknowledged": "yes",
             },
         )
+    def test_fabricated_intelligence_is_hidden_when_disabled(self):
+        app = create_app()
+        app.testing = True
+        app.config["FABRICATED_THREAT_LOOKUP_ENABLED"] = False
 
+        response = app.test_client().post(
+            "/analyze",
+            data={
+                "value": (
+                    "https://login-alert.example.test/"
+                    "account/verify"
+                ),
+                "trusted": "",
+                "acknowledged": "yes",
+            },
+        )
+
+        body = response.get_data(as_text=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn("Known-Threat Intelligence", body)
+        self.assertNotIn("FDF Fabricated Test Feed", body)
+        self.assertNotIn("test-phish-1001", body)
+
+    def test_fabricated_intelligence_renders_when_enabled(self):
+        app = create_app()
+        app.testing = True
+        app.config["FABRICATED_THREAT_LOOKUP_ENABLED"] = True
+
+        response = app.test_client().post(
+            "/analyze",
+            data={
+                "value": (
+                    "https://login-alert.example.test/"
+                    "account/verify"
+                ),
+                "trusted": "",
+                "acknowledged": "yes",
+            },
+        )
+
+        body = response.get_data(as_text=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Known-Threat Intelligence", body)
+        self.assertIn("Development test data", body)
+        self.assertIn("FDF Fabricated Test Feed", body)
+        self.assertIn("Phishing", body)
+        self.assertIn("Exact Url", body)
+        self.assertIn("Verified", body)
+        self.assertIn("test-phish-1001", body)
+
+    def test_no_match_intelligence_result_does_not_claim_safety(self):
+        app = create_app()
+        app.testing = True
+        app.config["FABRICATED_THREAT_LOOKUP_ENABLED"] = True
+
+        response = app.test_client().post(
+            "/analyze",
+            data={
+                "value": "https://clean.example.test/",
+                "trusted": "",
+                "acknowledged": "yes",
+            },
+        )
+
+        body = response.get_data(as_text=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Not Found", body)
+        self.assertIn(
+            "It does not mean the domain or URL is",
+            body,
+        )
+        self.assertNotIn("confirmed safe", body.casefold())
         body = response.get_data(as_text=True)
 
         self.assertEqual(response.status_code, 200)
