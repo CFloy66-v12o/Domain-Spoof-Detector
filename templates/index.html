@@ -241,26 +241,30 @@
         <section class="limitation">
           <h3>Important limitation</h3>
           <p>
-            This heuristic result is not a determination that the domain is
-            malicious or safe. The checker does not inspect registration,
-            DNS, hosting, certificates, redirects, webpage content,
-            reputation services, malware detections, or threat intelligence.
+            The domain-name analysis does not inspect registration, DNS, hosting,
+            certificates, redirects, or webpage content. When a named
+            threat-intelligence feed is available, its results appear separately and
+            represent only what that source reported. The checker does not visit or
+            connect to the submitted destination, and the absence of a feed match
+            does not establish that a domain or URL is safe.
           </p>
         </section>
-                {% if intelligence_findings %}
-          <section
-            class="intelligence-results"
-            aria-label="Known-threat intelligence test results"
-          >
+       {% if intelligence_findings %}
+        <section
+          class="intelligence-results"
+          aria-label="Known-threat intelligence results"
+        >
             <h2>Known-Threat Intelligence</h2>
 
-            <div class="test-data-notice">
+        {% if fabricated_feed_enabled %}
+          <div class="test-data-notice">
               <strong>Development test data:</strong>
-              These results use a fabricated local dataset containing reserved
-              <code>.test</code> domains. They are included only to validate
-              the lookup workflow and are not real threat-intelligence
-              findings.
-            </div>
+              These results use a fabricated local dataset containing
+              reserved <code>.test</code> domains. They are included only
+              to validate the lookup workflow and are not real
+              threat-intelligence findings.
+          </div>
+         {% endif %}
 
             {% for finding in intelligence_findings %}
               <article
