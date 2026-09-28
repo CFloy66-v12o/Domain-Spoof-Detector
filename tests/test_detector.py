@@ -149,7 +149,19 @@ class DetectorTests(unittest.TestCase):
                 "trusted": "",
                 "acknowledged": "yes",
             },
+        
         )
+        body = response.get_data(as_text=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("example[.]com", body)
+        self.assertIn("Defanged submitted hostname", body)
+        self.assertNotIn("user:password", body)
+        self.assertNotIn("/private/document", body)
+        self.assertNotIn("token=secret-value", body)
+        self.assertNotIn("#account", body)
+
+    
     def test_fabricated_intelligence_is_hidden_when_disabled(self):
         app = create_app()
         app.testing = True
@@ -225,15 +237,7 @@ class DetectorTests(unittest.TestCase):
             body,
         )
         self.assertNotIn("confirmed safe", body.casefold())
-        body = response.get_data(as_text=True)
-
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("example[.]com", body)
-        self.assertIn("Defanged submitted hostname", body)
-        self.assertNotIn("user:password", body)
-        self.assertNotIn("/private/document", body)
-        self.assertNotIn("token=secret-value", body)
-        self.assertNotIn("#account", body)
+        
 
 if __name__ == "__main__":
     unittest.main()
