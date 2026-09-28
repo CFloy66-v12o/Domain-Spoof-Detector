@@ -1,5 +1,6 @@
 import unittest
-
+from pathlib import Path
+from unittest.mock import patch
 from app import create_app
 from idnHomoglyphDetector import (
     analyze,
@@ -7,6 +8,11 @@ from idnHomoglyphDetector import (
     sanitized_defanged_display,
 )
 
+PHISHTANK_FIXTURE_PATH = (
+    Path(__file__).parent
+    / "fixtures"
+    / "phishtank_sample.json"
+)
 
 class DetectorTests(unittest.TestCase):
     def test_ascii_lookalike(self):
@@ -238,6 +244,95 @@ class DetectorTests(unittest.TestCase):
         )
         self.assertNotIn("confirmed safe", body.casefold())
         
+
+    def test_web_result_uses_configured_phishtank_feed(self):
+    with patch.dict(
+        "os.environ",
+         {
+            "FDF_PHISHTANK_FEED_PATH": str(
+                 PHISHTANK_FIXTURE_PATH
+            )
+        },
+        clear=False,
+        ):
+        app = create_app()
+
+        app.testing = True
+
+        response = app.test_client().post(
+            "/analyze",
+            data={
+                "value": (
+                    "https://login-alert.example.test/"
+                    "account?source=email"
+                ),
+                "trusted": "",
+                "acknowledged": "yes",
+            },
+        )
+
+        body = response.get_data(as_text=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("PhishTank", body)
+        self.assertIn(
+            "exactly matches a verified",
+            body,
+        )
+
+    def test_missing_configured_feed_reports_unavailable(self):
+        with patch.dict(
+            "os.environ",
+            {
+                "FDF_PHISHTANK_FEED_PATH": (
+                    "/missing/phishtank-feed.json"
+                )
+            },
+            clear=False,
+        ):
+            app = create_app()
+
+        app.testing = True
+
+        response = app.test_client().post(
+            "/analyze",
+            data={
+                "value": "https://example.test/",
+                "trusted": "",
+                "acknowledged": "yes",
+            },
+        )
+
+        body = response.get_data(as_text=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("PhishTank", body)
+        self.assertIn(
+            "temporarily unavailable",
+            body,
+        )
+
+    def test_health_reports_available_phishtank_feed(self):
+        with patch.dict(
+            "os.environ",
+            {
+                "FDF_PHISHTANK_FEED_PATH": str(
+                    PHISHTANK_FIXTURE_PATH
+                )
+            },
+            clear=False,
+        ):
+            app = create_app()
+
+        app.testing = True
+        response = app.test_client().get("/health")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.get_json()["phishtank_feed"],
+            "available",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
