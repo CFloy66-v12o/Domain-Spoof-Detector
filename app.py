@@ -34,8 +34,8 @@ def create_app() -> Flask:
     ).casefold()
     in {"1", "true", "yes"}
     )
-        phishtank_feed_path = os.environ.get(
-        "FDF_PHISHTANK_FEED_PATH",
+    phishtank_feed_path = os.environ.get(
+      "FDF_PHISHTANK_FEED_PATH",
         "",
     ).strip()
 
