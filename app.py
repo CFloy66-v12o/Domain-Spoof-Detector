@@ -8,7 +8,9 @@ from flask import Flask, render_template, request
 from idnHomoglyphDetector import (
     CONFUSABLES_VERSION,
     analyze,
+    defang_hostname,
     normalize_trusted_domain,
+    sanitized_defanged_display,
 )
 
 
@@ -84,7 +86,22 @@ def create_app() -> Flask:
                 # Do not reflect a full URL that may contain a private path,
                 # query string, fragment, or embedded credentials.
                 report_data["input_value"] = report.hostname
+                report_data["defanged_input"] = (
+                    sanitized_defanged_display(value)
+                )
+                report_data["defanged_unicode"] = defang_hostname(
+                    report.unicode_hostname
+                )
+                report_data["defanged_ascii"] = defang_hostname(
+                    report.ascii_hostname
+                )
                 report_data["comparison_domain"] = display_trusted
+                report_data["defanged_comparison"] = (
+                    defang_hostname(display_trusted)
+                    if display_trusted
+                    else ""
+                )
+                report_data["display_verdict"] = {
                 report_data["display_verdict"] = {
                     "low risk": (
                         "No supported domain-name indicators detected"
