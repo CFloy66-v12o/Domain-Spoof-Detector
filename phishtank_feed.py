@@ -6,7 +6,8 @@ separate component.
 """
 
 from __future__ import annotations
-
+import json
+from pathlib import Path
 from dataclasses import dataclass
 from collections.abc import Mapping
 
@@ -88,3 +89,66 @@ def parse_phishtank_record(
         ),
         target=_clean_text(raw_record.get("target")),
     )
+
+
+def load_phishtank_json(
+    feed_path: str | Path,
+    *,
+    max_bytes: int = 100_000_000,
+) -> tuple[PhishTankRecord, ...]:
+    """Load a bounded local JSON feed without making network connections.
+
+    The complete import fails if the file is oversized, malformed, or
+    contains an invalid active record. This prevents a damaged partial feed
+    from silently replacing a previously valid local data set.
+    """
+
+    if max_bytes <= 0:
+        raise ValueError("max_bytes must be greater than zero")
+
+    path = Path(feed_path)
+
+    try:
+        with path.open("rb") as feed_file:
+            payload = feed_file.read(max_bytes + 1)
+    except OSError as exc:
+        raise ValueError(
+            f"PhishTank feed could not be read: {path}"
+        ) from exc
+
+    if len(payload) > max_bytes:
+        raise ValueError(
+            f"PhishTank feed exceeds the {max_bytes}-byte limit"
+        )
+
+    try:
+        raw_feed = json.loads(payload)
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise ValueError("PhishTank feed is not valid JSON") from exc
+
+    if not isinstance(raw_feed, list):
+        raise ValueError(
+            "PhishTank feed must contain a top-level JSON array"
+        )
+
+    records: list[PhishTankRecord] = []
+
+    for position, raw_record in enumerate(raw_feed):
+        if not isinstance(raw_record, Mapping):
+            raise ValueError(
+                "PhishTank feed entry "
+                f"{position} is not a JSON object"
+            )
+
+        try:
+            record = parse_phishtank_record(raw_record)
+        except ValueError as exc:
+            raise ValueError(
+                "Invalid active PhishTank feed entry "
+                f"at position {position}: {exc}"
+            ) from exc
+
+        if record is not None:
+            records.append(record)
+
+    return tuple(records)
