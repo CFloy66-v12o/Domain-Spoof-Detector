@@ -3,6 +3,7 @@ import unittest
 from pathlib import Path
 
 from phishtank_feed import (
+    build_phishtank_index,
     load_phishtank_json,
     parse_phishtank_record,
 )
@@ -114,6 +115,46 @@ class PhishTankFeedTests(unittest.TestCase):
         self.assertNotIn("user:secret", record.url)
         self.assertNotIn("#account", record.url)
 
+
+    def test_index_returns_exact_normalized_url_match(self):
+        records = load_phishtank_json(FIXTURE_PATH)
+        index = build_phishtank_index(records)
+
+        matches = index.exact_url_matches(
+            "https://login-alert.example.test/"
+            "account?source=email#ignored-fragment"
+        )
+
+        self.assertEqual(len(matches), 1)
+        self.assertEqual(matches[0].phish_id, "300001")
+
+    def test_index_returns_hostname_association(self):
+        records = load_phishtank_json(FIXTURE_PATH)
+        index = build_phishtank_index(records)
+
+        matches = index.hostname_matches(
+            "https://login-alert.example.test/"
+            "a-different-path"
+        )
+
+        self.assertEqual(len(matches), 1)
+        self.assertEqual(matches[0].phish_id, "300001")
+
+    def test_exact_url_no_match_does_not_claim_hostname_match(self):
+        records = load_phishtank_json(FIXTURE_PATH)
+        index = build_phishtank_index(records)
+
+        exact_matches = index.exact_url_matches(
+            "https://login-alert.example.test/"
+            "a-different-path"
+        )
+        hostname_matches = index.hostname_matches(
+            "https://login-alert.example.test/"
+            "a-different-path"
+        )
+
+        self.assertEqual(exact_matches, ())
+        self.assertEqual(len(hostname_matches), 1)
 
 if __name__ == "__main__":
     unittest.main()
