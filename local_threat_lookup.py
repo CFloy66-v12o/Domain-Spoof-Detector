@@ -89,7 +89,7 @@ def canonicalize_url(value: str) -> str:
     )
 
 
-    def extract_intelligence_hostname(value: str) -> str:
+def extract_intelligence_hostname(value: str) -> str:
     """Extract and normalize a hostname without making a network request."""
     candidate = value.strip()
 
