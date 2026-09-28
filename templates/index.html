@@ -39,7 +39,7 @@
       >
       <p class="help">Only the hostname is retained for display and analysis.</p>
 
-      <label for="trusted">Expected legitimate domain <span>(strongly-recommended)</span></label>
+      <label for="trusted">Expected legitimate domain <span>(strongly recommended)</span></label>
       <input
         id="trusted"
         name="trusted"
@@ -72,16 +72,66 @@
     {% endif %}
 
     {% if report %}
-      <section class="results" aria-live="polite">
-        <h2>Analysis Summary</h2>
+     <h2>Domain-Name Analysis</h2>
+
+        <section class="result-scope" aria-label="Result scope">
+          <h3>What this result means</h3>
+          <p>
+            This result describes supported indicators found in the domain
+            name's characters and spelling. It is <strong>not</strong> a
+            determination that the link, website, sender, or destination is
+            safe or malicious.
+          </p>
+        </section>
+
         <dl class="summary-grid">
-          <div><dt>Hostname</dt><dd>{{ report.hostname }}</dd></div>
-          <div><dt>Unicode form</dt><dd>{{ report.unicode_hostname }}</dd></div>
-          <div><dt>ASCII/Punycode form</dt><dd>{{ report.ascii_hostname }}</dd></div>
-          <div><dt>Scripts detected</dt><dd>{{ report.scripts|join(', ') if report.scripts else 'None' }}</dd></div>
-          <div><dt>Risk score</dt><dd>{{ report.risk_score }}/100</dd></div>
-          <div><dt>Preliminary result</dt><dd class="verdict verdict-{{ report.verdict|replace(' ', '-') }}">{{ report.display_verdict }}</dd></div>
+          <div>
+            <dt>Hostname</dt>
+            <dd>{{ report.hostname }}</dd>
+          </div>
+          <div>
+            <dt>Unicode form</dt>
+            <dd>{{ report.unicode_hostname }}</dd>
+          </div>
+          <div>
+            <dt>ASCII/Punycode form</dt>
+            <dd>{{ report.ascii_hostname }}</dd>
+          </div>
+          <div>
+            <dt>Scripts detected</dt>
+            <dd>
+              {{ report.scripts|join(', ') if report.scripts else 'None' }}
+            </dd>
+          </div>
+          <div>
+            <dt>Domain indicator score</dt>
+            <dd>{{ report.risk_score }}/100</dd>
+          </div>
+          <div>
+            <dt>Domain-name assessment</dt>
+            <dd class="verdict verdict-{{ report.verdict|replace(' ', '-') }}">
+              {{ report.display_verdict }}
+            </dd>
+          </div>
+          <div class="summary-wide">
+            <dt>Legitimate-domain comparison</dt>
+            <dd>
+              {% if report.comparison_domain %}
+                Compared with {{ report.comparison_domain }}
+              {% else %}
+                Not provided—brand-impersonation and spelling comparison
+                was not performed
+              {% endif %}
+            </dd>
+          </div>
         </dl>
+
+        <p class="score-explainer">
+          The domain indicator score measures only the supported character,
+          writing-system, Punycode, and comparison checks shown on this page.
+          It is not a general phishing, malware, reputation, or website-safety
+          score.
+        </p>
 
         <h3>Detected Indicators</h3>
         {% if report.findings %}
