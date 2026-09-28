@@ -76,7 +76,7 @@ class LocalThreatLookupNormalizationTests(unittest.TestCase):
                 "https://example.com:not-a-port/login"
             )
 
-        def test_exact_url_match(self):
+    def test_exact_url_match(self):
         findings = lookup_local_feed(
             "https://login-alert.example.test/account/verify"
         )
