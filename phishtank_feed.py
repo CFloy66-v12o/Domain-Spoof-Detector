@@ -10,7 +10,7 @@ import json
 from pathlib import Path
 from dataclasses import dataclass
 from collections.abc import Mapping
-
+from types import MappingProxyType
 from local_threat_lookup import (
     canonicalize_url,
     extract_intelligence_hostname,
@@ -152,3 +152,71 @@ def load_phishtank_json(
             records.append(record)
 
     return tuple(records)
+
+
+@dataclass(frozen=True)
+class PhishTankIndex:
+    """Immutable local indexes for exact-URL and hostname lookups."""
+
+    by_url: Mapping[str, tuple[PhishTankRecord, ...]]
+    by_hostname: Mapping[str, tuple[PhishTankRecord, ...]]
+
+    def exact_url_matches(
+        self,
+        submitted_value: str,
+    ) -> tuple[PhishTankRecord, ...]:
+        """Return records matching the normalized submitted URL."""
+
+        normalized_url = canonicalize_url(submitted_value)
+        return self.by_url.get(normalized_url, ())
+
+    def hostname_matches(
+        self,
+        submitted_value: str,
+    ) -> tuple[PhishTankRecord, ...]:
+        """Return records associated with the submitted hostname."""
+
+        hostname = extract_intelligence_hostname(submitted_value)
+        return self.by_hostname.get(hostname, ())
+
+
+def build_phishtank_index(
+    records: tuple[PhishTankRecord, ...],
+) -> PhishTankIndex:
+    """Build immutable local indexes without resolving or visiting URLs."""
+
+    url_entries: dict[str, list[PhishTankRecord]] = {}
+    hostname_entries: dict[str, list[PhishTankRecord]] = {}
+    seen_ids: set[str] = set()
+
+    for record in records:
+        if record.phish_id in seen_ids:
+            raise ValueError(
+                f"Duplicate PhishTank ID: {record.phish_id}"
+            )
+
+        seen_ids.add(record.phish_id)
+
+        url_entries.setdefault(record.url, []).append(record)
+        hostname_entries.setdefault(
+            record.hostname,
+            [],
+        ).append(record)
+
+    immutable_urls = MappingProxyType(
+        {
+            key: tuple(value)
+            for key, value in url_entries.items()
+        }
+    )
+    immutable_hostnames = MappingProxyType(
+        {
+            key: tuple(value)
+            for key, value in hostname_entries.items()
+        }
+    )
+
+    return PhishTankIndex(
+        by_url=immutable_urls,
+        by_hostname=immutable_hostnames,
+    )
