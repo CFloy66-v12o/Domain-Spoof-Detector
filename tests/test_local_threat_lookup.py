@@ -1,7 +1,9 @@
 import unittest
+from pathlib import Path
 
 from local_threat_lookup import (
     canonicalize_url,
+    lookup_local_feed,
     normalize_intelligence_hostname,
 )
 
@@ -73,6 +75,85 @@ class LocalThreatLookupNormalizationTests(unittest.TestCase):
             canonicalize_url(
                 "https://example.com:not-a-port/login"
             )
+
+        def test_exact_url_match(self):
+        findings = lookup_local_feed(
+            "https://login-alert.example.test/account/verify"
+        )
+
+        self.assertEqual(len(findings), 1)
+        self.assertEqual(findings[0].status, "listed")
+        self.assertEqual(findings[0].match_type, "exact_url")
+        self.assertEqual(findings[0].classification, "phishing")
+        self.assertTrue(findings[0].verified)
+        self.assertEqual(
+            findings[0].reference,
+            "test-phish-1001",
+        )
+
+    def test_hostname_match_when_path_is_different(self):
+        findings = lookup_local_feed(
+            "https://login-alert.example.test/different-page"
+        )
+
+        self.assertEqual(len(findings), 1)
+        self.assertEqual(findings[0].status, "listed")
+        self.assertEqual(findings[0].match_type, "hostname")
+        self.assertEqual(findings[0].classification, "phishing")
+
+    def test_bare_hostname_match(self):
+        findings = lookup_local_feed(
+            "login-alert.example.test"
+        )
+
+        self.assertEqual(len(findings), 1)
+        self.assertEqual(findings[0].status, "listed")
+        self.assertEqual(findings[0].match_type, "hostname")
+
+    def test_malware_classification_remains_separate(self):
+        findings = lookup_local_feed(
+            "https://download.example.test/payload"
+        )
+
+        self.assertEqual(len(findings), 1)
+        self.assertEqual(findings[0].status, "listed")
+        self.assertEqual(
+            findings[0].classification,
+            "malware_distribution",
+        )
+        self.assertNotEqual(
+            findings[0].classification,
+            "phishing",
+        )
+
+    def test_no_match_does_not_claim_domain_is_safe(self):
+        findings = lookup_local_feed(
+            "https://clean.example.test/"
+        )
+
+        self.assertEqual(len(findings), 1)
+        self.assertEqual(findings[0].status, "not_found")
+        self.assertEqual(findings[0].match_type, "none")
+        self.assertFalse(findings[0].verified)
+        self.assertIn(
+            "does not establish",
+            findings[0].detail,
+        )
+
+    def test_missing_feed_returns_unavailable(self):
+        findings = lookup_local_feed(
+            "example.com",
+            Path("data/feed-that-does-not-exist.json"),
+        )
+
+        self.assertEqual(len(findings), 1)
+        self.assertEqual(findings[0].status, "unavailable")
+        self.assertEqual(findings[0].match_type, "none")
+        self.assertFalse(findings[0].verified)
+        self.assertIn(
+            "No conclusion should be drawn",
+            findings[0].detail,
+        )
 
 
 if __name__ == "__main__":
