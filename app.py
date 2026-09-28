@@ -92,6 +92,9 @@ def create_app() -> Flask:
             "index.html",
             report=None,
             intelligence_findings=None,
+            fabricated_feed_enabled=app.config[
+            "FABRICATED_THREAT_LOOKUP_ENABLED"
+            ],
             error=None,
             submitted_value="",
             trusted_value="",
