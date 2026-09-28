@@ -1,5 +1,4 @@
 from __future__ import annotations
-from threat_intelligence import ThreatIntelligenceFinding
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from typing import Any
