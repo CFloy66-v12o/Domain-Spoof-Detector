@@ -86,16 +86,16 @@
 
         <dl class="summary-grid">
           <div>
-            <dt>Hostname</dt>
-            <dd>{{ report.hostname }}</dd>
+            <dt>Defanged submitted hostname</dt>
+            <dd><code>{{ report.defanged_input }}</code></dd>
           </div>
           <div>
-            <dt>Unicode form</dt>
-            <dd>{{ report.unicode_hostname }}</dd>
+            <dt>Defanged Unicode form</dt>
+            <dd><code>{{ report.defanged_unicode }}</code></dd>
           </div>
           <div>
-            <dt>ASCII/Punycode form</dt>
-            <dd>{{ report.ascii_hostname }}</dd>
+            <dt>Defanged ASCII/Punycode form</dt>
+            <dd><code>{{ report.defanged_ascii }}</code></dd>
           </div>
           <div>
             <dt>Scripts detected</dt>
@@ -117,7 +117,8 @@
             <dt>Legitimate-domain comparison</dt>
             <dd>
               {% if report.comparison_domain %}
-                Compared with {{ report.comparison_domain }}
+                Compared with
+                <code>{{ report.defanged_comparison }}</code>
               {% else %}
                 Not provided—brand-impersonation and spelling comparison
                 was not performed
@@ -125,7 +126,13 @@
             </dd>
           </div>
         </dl>
-
+    
+        <p class="defang-explainer">
+          Displayed domains are defanged by replacing periods with
+          <code>[.]</code>. The checker treats submitted values as text and
+          does not resolve, visit, download from, or otherwise connect to the
+          destination.
+        </p>
         <p class="score-explainer">
           The domain indicator score measures only the supported character,
           writing-system, Punycode, and comparison checks shown on this page.
