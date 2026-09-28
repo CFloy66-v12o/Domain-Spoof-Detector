@@ -1,0 +1,28 @@
+{
+  "source": "FDF Fabricated Test Feed",
+  "generated_at": "2026-09-28T12:00:00+00:00",
+  "description": "Fabricated records using reserved test domains. Not real threat intelligence.",
+  "records": [
+    {
+      "reference": "test-phish-1001",
+      "url": "https://login-alert.example.test/account/verify",
+      "classification": "phishing",
+      "verified": true,
+      "source_timestamp": "2026-09-28T10:15:00+00:00"
+    },
+    {
+      "reference": "test-phish-1002",
+      "url": "http://secure-notice.example.test/signin",
+      "classification": "phishing",
+      "verified": true,
+      "source_timestamp": "2026-09-28T10:30:00+00:00"
+    },
+    {
+      "reference": "test-malware-1003",
+      "url": "https://download.example.test/payload",
+      "classification": "malware_distribution",
+      "verified": true,
+      "source_timestamp": "2026-09-28T11:00:00+00:00"
+    }
+  ]
+}
