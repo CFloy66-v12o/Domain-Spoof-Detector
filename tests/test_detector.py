@@ -54,6 +54,54 @@ class DetectorTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.get_json()["confusables_version"], "17.0.0")
 
+    def test_result_explains_scope_without_comparison_domain(self):
+        app = create_app()
+        app.testing = True
+
+        response = app.test_client().post(
+            "/analyze",
+            data={
+                "value": "example.com",
+                "trusted": "",
+                "acknowledged": "yes",
+            },
+        )
+
+        body = response.get_data(as_text=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Domain indicator score", body)
+        self.assertIn(
+            "brand-impersonation and spelling comparison",
+            body,
+        )
+        self.assertIn(
+            "not a general phishing, malware, reputation",
+            body,
+        )
+
+    def test_result_identifies_comparison_domain(self):
+        app = create_app()
+        app.testing = True
+
+        response = app.test_client().post(
+            "/analyze",
+            data={
+                "value": "paypaI.com",
+                "trusted": "paypal.com",
+                "acknowledged": "yes",
+            },
+        )
+
+        body = response.get_data(as_text=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Compared with paypal.com", body)
+        self.assertIn(
+            "Supported domain-name indicators detected",
+            body,
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
