@@ -1,7 +1,11 @@
 import unittest
 
 from app import create_app
-from idnHomoglyphDetector import analyze
+from idnHomoglyphDetector import (
+    analyze,
+    defang_hostname,
+    sanitized_defanged_display,
+)
 
 
 class DetectorTests(unittest.TestCase):
@@ -101,6 +105,34 @@ class DetectorTests(unittest.TestCase):
             "Supported domain-name indicators detected",
             body,
         )
+
+
+    def test_defang_hostname(self):
+        result = defang_hostname("login.example.com")
+
+        self.assertEqual(result, "login[.]example[.]com")
+
+    def test_sanitized_defanged_display_removes_sensitive_url_parts(self):
+        submitted_value = (
+            "https://user:password@example.com/private/document"
+            "?token=secret-value#account"
+        )
+
+        result = sanitized_defanged_display(submitted_value)
+
+        self.assertEqual(result, "example[.]com")
+        self.assertNotIn("user", result)
+        self.assertNotIn("password", result)
+        self.assertNotIn("private", result)
+        self.assertNotIn("document", result)
+        self.assertNotIn("token", result)
+        self.assertNotIn("secret-value", result)
+        self.assertNotIn("account", result)
+
+    def test_sanitized_defanged_display_accepts_bare_domain(self):
+        result = sanitized_defanged_display("subdomain.example.com")
+
+        self.assertEqual(result, "subdomain[.]example[.]com")
 
 
 if __name__ == "__main__":
