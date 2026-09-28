@@ -25,7 +25,10 @@
     </section>
 
     <form method="post" action="{{ url_for('analyze_submission') }}" class="checker-form">
-      <label for="value">Suspicious domain or link</label>
+      <label for="value">
+        Suspicious domain or link
+        <span>(paste exactly as received)</span>
+      </label>
       <input
         id="value"
         name="value"
@@ -37,7 +40,13 @@
         placeholder="Example: раypal.com or https://example.com/login"
         value="{{ submitted_value }}"
       >
-      <p class="help">Only the hostname is retained for display and analysis.</p>
+      <p class="help">
+        Paste the suspicious domain or link exactly as you received it.
+        Do not open it, correct its spelling, shorten it, or manually defang
+        it first. The checker treats the submission as text and does not
+        connect to the destination. Only a sanitized, defanged hostname is
+        returned for display.
+      </p>
 
       <label for="trusted">Expected legitimate domain <span>(strongly recommended)</span></label>
       <input
@@ -53,9 +62,14 @@
       <p class="help">
         Enter the domain you believe the submitted address may be imitating—for example, paypal.com. This enables additional look-alike and misspelling checks and may substantially change the result.</p>
 
-      <label class="acknowledgment">
+       <label class="acknowledgment">
         <input name="acknowledged" type="checkbox" value="yes" required>
-        <span>I understand that this is a preliminary text analysis and does not determine whether a website is safe or malicious.</span>
+        <span>
+          I understand that I should paste the suspicious link without
+          opening it. This tool performs preliminary text analysis without
+          visiting the destination and does not determine whether a website
+          is safe or malicious.
+        </span>
       </label>
 
       <div class="actions">
