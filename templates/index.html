@@ -72,7 +72,8 @@
     {% endif %}
 
     {% if report %}
-     <h2>Domain-Name Analysis</h2>
+      <section class="results" aria-live="polite">
+        <h2>Domain-Name Analysis</h2>
 
         <section class="result-scope" aria-label="Result scope">
           <h3>What this result means</h3>
@@ -140,7 +141,8 @@
           score.
         </p>
 
-        <h3>Detected Indicators</h3>
+      <h3>Detected Indicators</h3>
+
         {% if report.findings %}
           <ul class="findings">
           {% for finding in report.findings %}
@@ -151,9 +153,54 @@
           {% endfor %}
           </ul>
         {% else %}
-          <p>No indicators supported by the implemented checks were detected.</p>
+          {% if report.comparison_domain %}
+            <p>
+              No indicators supported by the implemented domain-name checks
+              were detected using the information and comparison domain
+              provided. This does not establish that the link or website is
+              safe.
+            </p>
+          {% else %}
+            <section class="comparison-warning">
+              <strong>
+                No supported standalone domain-name indicators were detected.
+              </strong>
+              <p>
+                No legitimate comparison domain was provided, so the checker
+                did not evaluate whether this hostname is a misspelling or
+                ASCII look-alike of a specific trusted domain. Enter the
+                expected legitimate domain and analyze again for a stronger
+                comparison.
+              </p>
+            </section>
+          {% endif %}
         {% endif %}
+         <div class="coverage-grid">
+          <section>
+            <h3>What was checked</h3>
+            <ul>
+              <li>Unicode and IDN characters</li>
+              <li>Punycode representation</li>
+              <li>Mixed writing systems</li>
+              <li>Supported visual character substitutions</li>
+              <li>
+                Supported spelling patterns when a comparison domain was
+                provided
+              </li>
+            </ul>
+          </section>
 
+          <section>
+            <h3>What was not checked</h3>
+            <ul>
+              <li>Website content or redirects</li>
+              <li>DNS, registration, hosting, or certificates</li>
+              <li>Threat intelligence or reputation services</li>
+              <li>Malware, downloads, or network behavior</li>
+              <li>Whether the sender or destination is trustworthy</li>
+            </ul>
+          </section>
+        </div>
         {% if report.character_details %}
           <h3>Character Details</h3>
           <div class="table-wrap">
