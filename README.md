@@ -283,3 +283,30 @@ environment variable is explicitly enabled:
 
 ```text
 FDF_ENABLE_FABRICATED_THREAT_FEED=true
+
+## PhishTank Feed Integration
+
+The application supports local lookups against a validated PhishTank JSON
+feed. Submitted URLs are compared locally; the application does not visit,
+resolve, or connect to destinations contained in either user input or the
+feed.
+
+The feed updater:
+
+- Connects only to the approved PhishTank HTTPS data host
+- Restricts redirects to that same host
+- Limits compressed and decompressed file sizes
+- Rejects empty, malformed, or inactive-only feeds
+- Validates the complete replacement before activation
+- Preserves the last valid feed when an update fails
+
+The application distinguishes exact URL matches from hostname associations.
+A hostname association does not establish that the submitted URL itself
+appears in the feed. A no-match result does not establish safety.
+
+### Runtime configuration
+
+The updater writes to the path configured by:
+
+```text
+FDF_PHISHTANK_DESTINATION
