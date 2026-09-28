@@ -222,11 +222,11 @@ def update_local_feed(
 def main() -> None:
     """Run one controlled feed update."""
 
-    record_count = update_local_feed()
-    print(
-        "PhishTank feed updated successfully: "
-        f"{record_count} active records"
-    )
+    destination = os.environ.get(
+        "FDF_PHISHTANK_DESTINATION",
+        str(DEFAULT_DESTINATION),
+        )
+    record_count = update_local_feed(destination)
 
 
 if __name__ == "__main__":
