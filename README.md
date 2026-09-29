@@ -103,7 +103,6 @@ The project uses this dataset as one component of its detection logic. It should
 
 The program uses Python’s standard library and does not require additional third-party Python packages.
 
-## Repository Structure
 
 ## Repository Structure
 
