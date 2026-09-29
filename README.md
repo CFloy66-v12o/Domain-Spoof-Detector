@@ -202,25 +202,59 @@ python3 .\idnHomoglyphDetector.py suspicious-domain.com `
 
 ## Understanding the Results
 
+The checker reports indicators found in the submitted domain name. It does not open the destination or determine by itself whether a website, link, sender, or organization is safe or malicious.
+
+### Domain-Name Analysis
+
 The report may include:
 
-* Original extracted hostname
-* Decoded Unicode representation
-* ASCII/Punycode representation
-* Writing systems detected
-* Computed visual skeleton
-* Character-level Unicode evidence
-* Individual findings and severity levels
-* Numerical risk score
-* Overall verdict
+- The extracted hostname, displayed in a sanitized or defanged form
+- The decoded Unicode representation
+- The ASCII or Punycode representation
+- Writing systems detected, such as Latin or Cyrillic
+- Mixed-script or look-alike-character indicators
+- A computed visual skeleton used to compare characters that may look alike
+- Character-level Unicode evidence
+- Comparison with an expected legitimate domain, when one is provided
+- Individual findings and severity levels
+- A domain-indicator score
+- An overall domain-name assessment
 
-The verdicts are heuristic:
+A **visual skeleton** is a simplified comparison form that helps identify characters with a similar appearance. It is an analytical value and is not another version of the actual domain.
 
-* **Low risk:** No significant indicators were identified by the implemented checks.
-* **Suspicious:** One or more characteristics warrant additional investigation.
-* **High risk:** Strong visual similarity or trusted-domain impersonation indicators were detected.
+The domain-indicator score is not a percentage probability that a domain is malicious. It summarizes only the indicators supported by the checks implemented in this tool.
 
-A low-risk result does not establish that a domain is safe. Likewise, a high-risk result does not independently prove malicious ownership or intent.
+### Domain-Name Assessments
+
+- **No supported indicators detected:** The implemented checks did not identify supported domain-name warning signs using the information provided.
+- **Supported indicators detected:** One or more domain-name characteristics warrant additional review.
+- **Strong impersonation indicators detected:** Strong visual-similarity or trusted-domain impersonation indicators were identified.
+
+A result with no supported indicators does not establish that a domain is safe. A strong-indicator result does not independently prove malicious ownership, intent, or activity.
+
+Providing the expected legitimate domain allows the checker to perform a stronger spelling and visual comparison. Without it, certain ASCII substitutions or brand-impersonation patterns may not be detectable.
+
+### Known-Phishing Intelligence
+
+When an approved phishing-intelligence source is configured and successfully queried, the report may also identify:
+
+- The intelligence source checked
+- Whether an exact submitted-URL match was found
+- Whether a hostname match was found
+- The source or feed update time
+- Whether the lookup returned a match, no match, was unavailable, or encountered an error
+
+A phishing-intelligence match means that the submitted URL or hostname appears in the identified source. It does not mean that Frederick Data Forensics independently verified every aspect of the listing.
+
+A “not found” result means only that no matching record was located in the intelligence data available to the tool at the time of analysis. It does not establish that the URL, domain, sender, or destination is safe.
+
+The public phishing-intelligence feature remains under development until an approved live data source is configured and tested.
+
+### Defanged Addresses
+
+A defanged address has been changed slightly—for example, `example.com` becomes `example[.]com`—to reduce the chance that it will be opened accidentally or treated as a clickable link.
+
+Defanging does not change the address being analyzed, prove that the address is harmful, or make the original destination safe.
 
 ## Intended Use
 
