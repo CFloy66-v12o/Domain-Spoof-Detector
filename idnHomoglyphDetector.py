@@ -130,7 +130,6 @@ class Report:
     findings: list[Finding] 
     
 
-    
 def extract_hostname(value: str) -> str:
     """Extract a hostname without making network request"""
     candidate = value.strip()
@@ -142,6 +141,23 @@ def extract_hostname(value: str) -> str:
     if not parsed.hostname:
         raise ValueError("Could not extract hostname")
     return parsed.hostname.rstrip(".").lower()
+
+
+def defang_hostname(hostname: str) -> str:
+    """Return a non-clickable display form of an extracted hostname."""
+    return hostname.replace(".", "[.]")
+
+
+def sanitized_defanged_display(value: str) -> str:
+    """
+    Parse untrusted input without connecting to it and return only a
+    sanitized, defanged hostname for display.
+
+    Paths, query strings, fragments, and embedded credentials are not
+    included in the returned value.
+    """
+    hostname = extract_hostname(value)
+    return defang_hostname(hostname)
 
 
 def unicode_hostname(hostname: str) -> str:

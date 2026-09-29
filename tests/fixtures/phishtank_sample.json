@@ -1,0 +1,42 @@
+[
+  {
+    "phish_id": 300001,
+    "url": "https://login-alert.example.test/account?source=email",
+    "phish_detail_url": "https://phishtank.example.test/phish/300001",
+    "submission_time": "2026-09-28T12:00:00+00:00",
+    "verified": "yes",
+    "verification_time": "2026-09-28T12:05:00+00:00",
+    "online": "yes",
+    "target": "Example Payment Service"
+  },
+  {
+    "phish_id": 300002,
+    "url": "https://unverified.example.test/sign-in",
+    "phish_detail_url": "https://phishtank.example.test/phish/300002",
+    "submission_time": "2026-09-28T12:10:00+00:00",
+    "verified": "no",
+    "verification_time": "",
+    "online": "yes",
+    "target": "Example Mail Service"
+  },
+  {
+    "phish_id": 300003,
+    "url": "https://offline.example.test/update",
+    "phish_detail_url": "https://phishtank.example.test/phish/300003",
+    "submission_time": "2026-09-28T12:20:00+00:00",
+    "verified": "yes",
+    "verification_time": "2026-09-28T12:25:00+00:00",
+    "online": "no",
+    "target": "Example Cloud Service"
+  },
+  {
+    "phish_id": 300004,
+    "url": "https://secure-notice.example.test/verify",
+    "phish_detail_url": "https://phishtank.example.test/phish/300004",
+    "submission_time": "2026-09-28T12:30:00+00:00",
+    "verified": "yes",
+    "verification_time": "2026-09-28T12:35:00+00:00",
+    "online": "yes",
+    "target": "Example Financial Institution"
+  }
+]

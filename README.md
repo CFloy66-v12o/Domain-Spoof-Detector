@@ -249,3 +249,64 @@ The included Unicode confusables dataset is provided by Unicode, Inc. under the 
 ## Disclaimer
 
 This software is provided for educational, defensive-security, and research purposes. Its findings should be treated as indicators requiring analyst interpretation, not as conclusive determinations that a domain is safe or malicious.
+
+## Known-Threat Intelligence Development Status
+
+The project includes a local threat-intelligence lookup framework that is
+currently intended for development and testing. It remains separate from the
+domain-name character and spelling analysis.
+
+The intelligence framework does not visit, resolve, or connect to submitted
+domains or URLs. Lookups are performed against locally stored records. Full
+submitted URLs are processed only as necessary for comparison, while public
+results display a sanitized, defanged hostname.
+
+### Fabricated Test Feed
+
+The repository includes a small fabricated feed containing reserved
+`.example.test` domains. These records are fictional and exist only to test:
+
+- Exact-URL matches
+- Hostname associations
+- No-match results
+- Unavailable-feed results
+- Threat-category separation
+- Safe display and defanging behavior
+
+The fabricated feed must never be described as real threat intelligence or
+used to make decisions about actual domains.
+
+### Feature Flag
+
+The fabricated lookup is disabled by default. It runs only when the following
+environment variable is explicitly enabled:
+
+```text
+FDF_ENABLE_FABRICATED_THREAT_FEED=true
+```
+## PhishTank Feed Integration
+
+The application supports local lookups against a validated PhishTank JSON
+feed. Submitted URLs are compared locally; the application does not visit,
+resolve, or connect to destinations contained in either user input or the
+feed.
+
+The feed updater:
+
+- Connects only to the approved PhishTank HTTPS data host
+- Restricts redirects to that same host
+- Limits compressed and decompressed file sizes
+- Rejects empty, malformed, or inactive-only feeds
+- Validates the complete replacement before activation
+- Preserves the last valid feed when an update fails
+
+The application distinguishes exact URL matches from hostname associations.
+A hostname association does not establish that the submitted URL itself
+appears in the feed. A no-match result does not establish safety.
+
+### Runtime configuration
+
+The updater writes to the path configured by:
+
+```text
+FDF_PHISHTANK_DESTINATION

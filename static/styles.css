@@ -21,10 +21,45 @@ body {
 
 .shell { width: min(920px, calc(100% - 32px)); margin: 0 auto; padding: 42px 0; }
 .eyebrow { margin: 0 0 4px; color: var(--brand-dark); font-weight: 700; letter-spacing: .04em; }
+.brand-logo {
+  display: inline-block;
+  margin-bottom: 16px;
+}
+
+.brand-logo img {
+  display: block;
+  width: min(320px, 100%);
+  height: auto;
+}
 h1 { margin: 0; font-size: clamp(2rem, 5vw, 3.2rem); line-height: 1.12; }
 .lede { max-width: 700px; color: var(--muted); font-size: 1.1rem; }
-.notice, .limitation, .error { border-left: 5px solid var(--brand); background: var(--panel); padding: 16px 18px; margin: 24px 0; }
+.notice,
+.limitation,
+.error,
+.result-scope,
+.comparison-warning {
+  border-left: 5px solid var(--brand);
+  background: var(--panel);
+  padding: 16px 18px;
+  margin: 24px 0;
+}
 .error { border-color: var(--danger); }
+.result-scope h3 {
+  margin-top: 0;
+}
+
+.result-scope p {
+  margin-bottom: 0;
+}
+
+.comparison-warning {
+  border-color: var(--warn);
+}
+
+.comparison-warning p {
+  margin-top: 6px;
+  margin-bottom: 0;
+}
 .checker-form { border: 1px solid var(--line); border-radius: 12px; padding: 24px; margin: 28px 0; box-shadow: 0 6px 22px rgb(20 36 60 / 7%); }
 label { display: block; font-weight: 700; margin-top: 18px; }
 label:first-child { margin-top: 0; }
@@ -42,11 +77,109 @@ button:hover { background: var(--brand-dark); }
 .results { margin-top: 34px; }
 .summary-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); }
 .summary-grid div { background: #fff; padding: 12px 14px; min-width: 0; }
+.summary-grid .summary-wide {
+  grid-column: 1 / -1;
+}
 dt { color: var(--muted); font-size: .86rem; font-weight: 700; text-transform: uppercase; }
 dd { margin: 4px 0 0; overflow-wrap: anywhere; }
 .verdict { font-weight: 800; text-transform: uppercase; }
 .verdict-high-risk { color: var(--danger); }
 .verdict-suspicious { color: var(--warn); }
+.score-explainer {
+  color: var(--muted);
+  font-size: .92rem;
+}
+
+.coverage-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin: 24px 0;
+}
+
+.coverage-grid section {
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 4px 18px 12px;
+}
+
+.coverage-grid h3 {
+  margin-bottom: 6px;
+}
+
+.coverage-grid ul {
+  margin-top: 6px;
+  padding-left: 20px;
+}
+.intelligence-results {
+  border-top: 2px solid var(--line);
+  margin-top: 32px;
+  padding-top: 24px;
+}
+
+.test-data-notice {
+  border-left: 5px solid #6b46a8;
+  background: #f7f3fc;
+  margin: 18px 0;
+  padding: 16px 18px;
+}
+
+.intelligence-finding {
+  border: 1px solid var(--line);
+  border-left: 5px solid var(--brand);
+  border-radius: 8px;
+  margin: 18px 0;
+  padding: 18px;
+}
+
+.intelligence-listed {
+  border-left-color: var(--danger);
+}
+
+.intelligence-not_found {
+  border-left-color: var(--brand);
+}
+
+.intelligence-unavailable,
+.intelligence-user_reported {
+  border-left-color: var(--warn);
+}
+
+.intelligence-finding h3 {
+  margin-top: 0;
+}
+
+.intelligence-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  margin: 14px 0;
+}
+
+.intelligence-grid div {
+  background: #fff;
+  min-width: 0;
+  padding: 10px 12px;
+}
+
+.intelligence-grid .intelligence-wide {
+  grid-column: 1 / -1;
+}
+
+.intelligence-caution {
+  color: var(--warn);
+  font-weight: 700;
+}
+
+code {
+  background: #eef2f7;
+  border-radius: 4px;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  overflow-wrap: anywhere;
+  padding: 1px 4px;
+}
 .findings { list-style: none; padding: 0; }
 .finding { border: 1px solid var(--line); border-left-width: 5px; padding: 12px 14px; margin: 9px 0; }
 .finding strong, .finding span { display: block; }
@@ -61,7 +194,23 @@ th { background: var(--panel); }
 footer { border-top: 1px solid var(--line); color: var(--muted); font-size: .88rem; margin-top: 36px; padding-top: 18px; }
 
 @media (max-width: 650px) {
-  .shell { width: min(100% - 20px, 920px); padding: 24px 0; }
-  .checker-form { padding: 18px; }
-  .summary-grid { grid-template-columns: 1fr; }
+  .shell {
+    width: min(100% - 20px, 920px);
+    padding: 24px 0;
+  }
+
+  .checker-form {
+    padding: 18px;
+  }
+
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .coverage-grid {
+    grid-template-columns: 1fr;
+  }
+  .intelligence-grid {
+    grid-template-columns: 1fr;
+  }
 }

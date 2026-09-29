@@ -1,0 +1,38 @@
+name: Run Python Tests
+
+on:
+  push:
+    branches:
+      - main
+      - feature/domain-reputation
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+
+      - name: Compile Python files
+        run: |
+          python -m py_compile app.py idnHomoglyphDetector.py
+          python -m py_compile threat_intelligence.py local_threat_lookup.py
+
+      - name: Run test suite
+        run: python -m unittest discover -s tests -v

@@ -4,11 +4,19 @@ import os
 from dataclasses import asdict
 
 from flask import Flask, render_template, request
-
+from local_threat_lookup import lookup_local_feed
+from phishtank_feed import (
+    build_phishtank_index,
+    load_phishtank_json,
+    lookup_phishtank_index,
+)
+from threat_intelligence import ThreatIntelligenceFinding
 from idnHomoglyphDetector import (
     CONFUSABLES_VERSION,
     analyze,
+    defang_hostname,
     normalize_trusted_domain,
+    sanitized_defanged_display,
 )
 
 
@@ -19,6 +27,42 @@ MAX_TRUSTED_LENGTH = 253
 def create_app() -> Flask:
     app = Flask(__name__)
     app.config["MAX_CONTENT_LENGTH"] = 16 * 1024
+    app.config["FABRICATED_THREAT_LOOKUP_ENABLED"] = (
+      os.environ.get(
+        "FDF_ENABLE_FABRICATED_THREAT_FEED",
+        "",
+    ).casefold()
+    in {"1", "true", "yes"}
+    )
+    phishtank_feed_path = os.environ.get(
+      "FDF_PHISHTANK_FEED_PATH",
+        "",
+    ).strip()
+
+    phishtank_index = None
+    phishtank_feed_status = "disabled"
+
+    if phishtank_feed_path:
+        try:
+            phishtank_records = load_phishtank_json(
+                phishtank_feed_path
+            )
+            phishtank_index = build_phishtank_index(
+                phishtank_records
+            )
+            phishtank_feed_status = "available"
+        except ValueError:
+            phishtank_feed_status = "unavailable"
+            app.logger.warning(
+                "Configured PhishTank feed could not be loaded"
+            )
+
+    app.config["PHISHTANK_FEED_CONFIGURED"] = bool(
+        phishtank_feed_path
+    )
+    app.config["PHISHTANK_FEED_STATUS"] = (
+        phishtank_feed_status
+    )
 
     @app.after_request
     def security_headers(response):
@@ -47,6 +91,10 @@ def create_app() -> Flask:
         return render_template(
             "index.html",
             report=None,
+            intelligence_findings=None,
+            fabricated_feed_enabled=app.config[
+            "FABRICATED_THREAT_LOOKUP_ENABLED"
+            ],
             error=None,
             submitted_value="",
             trusted_value="",
@@ -60,6 +108,7 @@ def create_app() -> Flask:
         acknowledged = request.form.get("acknowledged") == "yes"
         error = None
         report_data = None
+        intelligence_data = None
         display_value = ""
         display_trusted = ""
 
@@ -76,33 +125,106 @@ def create_app() -> Flask:
                 trusted_domains = [trusted] if trusted else []
                 report = analyze(value, trusted_domains)
                 report_data = asdict(report)
-                # Do not reflect a full URL that may contain a private path,
-                # query string, fragment, or embedded credentials.
-                report_data["input_value"] = report.hostname
-                report_data["display_verdict"] = (
-                    "no supported indicators detected"
-                    if report.verdict == "low risk"
-                    else report.verdict
-                )
-                display_value = report.hostname
+
                 display_trusted = (
                     normalize_trusted_domain(trusted) if trusted else ""
                 )
+
+                # Do not reflect a full URL that may contain a private path,
+                # query string, fragment, or embedded credentials.
+                report_data["input_value"] = report.hostname
+                report_data["defanged_input"] = (
+                    sanitized_defanged_display(value)
+                )
+                report_data["defanged_unicode"] = defang_hostname(
+                    report.unicode_hostname
+                )
+                report_data["defanged_ascii"] = defang_hostname(
+                    report.ascii_hostname
+                )
+                report_data["comparison_domain"] = display_trusted
+                report_data["defanged_comparison"] = (
+                    defang_hostname(display_trusted)
+                    if display_trusted
+                    else ""
+                )
+                report_data["display_verdict"] = {
+                    "low risk": (
+                        "No supported domain-name indicators detected"
+                    ),
+                    "suspicious": (
+                        "Supported domain-name indicators detected"
+                    ),
+                    "high risk": (
+                        "Strong domain-name impersonation indicators detected"
+                    ),
+                }.get(report.verdict, report.verdict)
+
+                display_value = report.hostname
+
+                intelligence_findings = []
+
+                if phishtank_index is not None:
+                    intelligence_findings.extend(
+                        lookup_phishtank_index(
+                            phishtank_index,
+                            value,
+                        )
+                    )
+                elif app.config[
+                    "PHISHTANK_FEED_CONFIGURED"
+                ]:
+                    intelligence_findings.append(
+                        ThreatIntelligenceFinding(
+                            source="PhishTank",
+                            status="unavailable",
+                            classification="phishing",
+                            match_type="none",
+                            verified=False,
+                            detail=(
+                                "The PhishTank feed is temporarily "
+                                "unavailable. No PhishTank determination "
+                                "was made."
+                            ),
+                        )
+                    )
+
+                if app.config[
+                    "FABRICATED_THREAT_LOOKUP_ENABLED"
+                ]:
+                    intelligence_findings.extend(
+                        lookup_local_feed(value)
+                    )
+
+                if intelligence_findings:
+                    intelligence_data = [
+                        finding.to_dict()
+                        for finding in intelligence_findings
+                    ]
             except (UnicodeError, ValueError) as exc:
                 error = f"The hostname could not be analyzed: {exc}"
 
         return render_template(
             "index.html",
             report=report_data,
+            intelligence_findings=intelligence_data,
+            fabricated_feed_enabled=app.config[
+                "FABRICATED_THREAT_LOOKUP_ENABLED"
+            ],
             error=error,
             submitted_value=display_value,
             trusted_value=display_trusted,
             confusables_version=CONFUSABLES_VERSION,
         ), 400 if error else 200
-
     @app.get("/health")
     def health():
-        return {"status": "ok", "confusables_version": CONFUSABLES_VERSION}
+        return {
+            "status": "ok",
+            "confusables_version": CONFUSABLES_VERSION,
+            "phishtank_feed": app.config[
+                "PHISHTANK_FEED_STATUS"
+            ],
+        }
 
     return app
 
