@@ -9,11 +9,26 @@
 <body>
   <main class="shell">
     <header>
+            <a
+        class="brand-logo"
+        href="/"
+        aria-label="Frederick Data Forensics home"
+      >
+        <img
+          src="{{ url_for(
+            'static',
+            filename='FDF-brand-image-320x132-email-logo.png'
+          ) }}"
+          alt="Frederick Data Forensics"
+          width="320"
+          height="132"
+        >
+      </a>
       <p class="eyebrow">Frederick Data Forensics, L.L.C.</p>
       <h1>Suspicious Domain Checker</h1>
       <p class="lede">
-        Examine a domain for Unicode look-alike characters, Punycode,
-        mixed writing systems, and common typosquatting patterns.
+        Analyze suspicious domain names for look-alike characters, deceptive spelling, and other impersonation indicators. 
+        *Known-phishing intelligence comparison is currently being prepared and is not yet available in the public tool.*
       </p>
     </header>
 
