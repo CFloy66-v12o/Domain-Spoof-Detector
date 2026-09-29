@@ -11,6 +11,11 @@ Cloud Run deployment, and embedding instructions.
 
 The tool examines the actual characters underlying a hostname rather than relying only on how the domain appears visually. For non-ASCII and other notable characters, it can report the character’s position, Unicode code point, official Unicode name, writing system, and corresponding visual skeleton. This makes it possible to distinguish visually similar characters such as the ASCII Latin `a` (`U+0061`) and Cyrillic `а` (`U+0430`).
 
+[![Use the Web-Based Tool](https://img.shields.io/badge/Use%20the%20Web--Based%20Tool-0078B8?style=for-the-badge)](https://domain-spoof-detector-834650413835.europe-west1.run.app/)
+
+Use the hosted checker without installing Python:  
+[Open the FDF Domain Spoof Detector](https://domain-spoof-detector-834650413835.europe-west1.run.app/)
+
 ## Features
 
 * Extracts hostnames from plain domain names and complete URLs
