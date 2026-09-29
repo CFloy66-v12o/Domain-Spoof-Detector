@@ -105,22 +105,50 @@ The program uses Python’s standard library and does not require additional thi
 
 ## Repository Structure
 
+## Repository Structure
+
 ```text
 domain-spoof-detector/
-├── idnHomoglyphDetector.py
-├── confusables.txt
-├── README.md
+├── .github/
+│   └── workflows/
+│       └── tests.yml
+├── LICENSES/
+│   └── UNICODE-LICENSE-V3.txt
+├── data/
+│   └── fabricated_threat_feed.json
+├── static/
+│   ├── FDF-brand-image-320x132-email-logo.png
+│   └── styles.css
+├── templates/
+│   └── index.html
+├── tests/
+│   └── [automated tests and test fixtures]
+├── .dockerignore
+├── .gitignore
+├── Dockerfile
 ├── LICENSE
-└── THIRD_PARTY_NOTICES.md
+├── Quick Start for Everyday Users.md
+├── README.md
+├── THIRD_PARTY_NOTICES.md
+├── TRADEMARKS.md
+├── Technical Usage.md
+├── WEB_DEPLOYMENT.md
+├── app.py
+├── confusables.txt
+├── idnHomoglyphDetector.py
+├── local_threat_lookup.py
+├── phishtank_feed.py
+├── requirements.txt
+├── threat_intelligence.py
+└── update_phishtank_feed.py
 ```
-
 ## Usage
 
 General syntax:
 
-```text
+
 python3 idnHomoglyphDetector.py VALUE [--trusted DOMAIN] [--json]
-```
+
 
 Display help:
 
