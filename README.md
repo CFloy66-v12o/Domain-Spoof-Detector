@@ -245,6 +245,16 @@ Possible future improvements include:
 * SIEM or SOAR integration
 * Configurable scoring policies
 
+## Trademark and Branding Notice
+
+The software code in this repository is provided under the license identified in the [`LICENSE`](LICENSE) file.
+
+“Frederick Data Forensics,” “FDF,” and the Frederick Data Forensics logo are trademarks, service identifiers, or brand assets of Frederick Data Forensics, L.L.C. The software license does not grant permission to use this branding to imply affiliation, endorsement, or that a modified deployment is an official Frederick Data Forensics service.
+
+Modified or redistributed versions should remove Frederick Data Forensics branding unless prior written permission has been granted. Required copyright, license, attribution, and third-party notices must still be retained.
+
+See [`TRADEMARKS.md`](TRADEMARKS.md) for the complete brand-use policy.
+
 ## License
 
 The Python source code is licensed under the MIT License. See `LICENSE`.
